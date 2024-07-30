@@ -36,9 +36,20 @@ function startDrawing(e) {
 
 function draw(e) {
   if (!isDrawing) return;
+
+  e.preventDefault(); // Prevent scrolling on touch devices
+
   const rect = drawCanvas.getBoundingClientRect();
-  const x = e.clientX - rect.left;
-  const y = e.clientY - rect.top;
+  let x, y;
+
+  if (e.touches) {
+    x = e.touches[0].clientX - rect.left;
+    y = e.touches[0].clientY - rect.top;
+  } else {
+    x = e.clientX - rect.left;
+    y = e.clientY - rect.top;
+  }
+
   drawCtx.lineTo(x, y);
   drawCtx.stroke();
   drawCtx.beginPath();
@@ -61,7 +72,7 @@ async function runModel() {
 
   const model = await tf.loadLayersModel(modelUrl + "model.json");
   model.summary();
-  document.getElementById("model_status").innerText = "Model ready to use!";
+  document.getElementById("model_status").innerText = "Model ready!";
 }
 
 function processImage() {
