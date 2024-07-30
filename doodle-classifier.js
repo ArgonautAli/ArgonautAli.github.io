@@ -153,7 +153,7 @@ async function predict() {
 
     resultP.textContent = resultText;
     confP.textContent = confText;
-  }, 1000);
+  }, 500);
 
   // topPredictions.forEach((pred) => {
   //   resultText += `${pred.label}: ${(pred.probability * 100).toFixed(2)}%\n`;
