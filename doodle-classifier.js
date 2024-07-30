@@ -1,5 +1,4 @@
-const modelUrl =
-  "https://doodle-classifier-mini.s3.ap-northeast-1.amazonaws.com/model/";
+const modelUrl = "https://d2yohi44ryafbx.cloudfront.net/model/";
 
 const classLabels = ["ambulance", "cat", "dog", "house", "tree"];
 
