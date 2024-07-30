@@ -24,6 +24,11 @@ drawCanvas.addEventListener("mousemove", draw);
 drawCanvas.addEventListener("mouseup", stopDrawing);
 drawCanvas.addEventListener("mouseout", stopDrawing);
 
+drawCanvas.addEventListener("touchstart", startDrawing);
+drawCanvas.addEventListener("touchmove", draw);
+drawCanvas.addEventListener("touchend", stopDrawing);
+drawCanvas.addEventListener("touchcancel", stopDrawing);
+
 function startDrawing(e) {
   isDrawing = true;
   draw(e);
@@ -52,8 +57,11 @@ function clearCanvas() {
 }
 
 async function runModel() {
+  document.getElementById("model_status").innerText = "Loading Model...";
+
   const model = await tf.loadLayersModel(modelUrl + "model.json");
   model.summary();
+  document.getElementById("model_status").innerText = "Model ready to use!";
 }
 
 function processImage() {
@@ -78,7 +86,7 @@ function processImage() {
   const tempCtx = tempCanvas.getContext("2d");
 
   // Draw the inverted image on the temporary canvas
-  // tempCtx.putImageData(imageData, 0, 0);
+  tempCtx.putImageData(imageData, 0, 0);
 
   // Create a second temporary canvas for the resized image
   const resizedCanvas = document.createElement("canvas");
@@ -102,13 +110,12 @@ function processImage() {
     inputData[i / 4] = grayscale / 255.0; // Normalize to [0, 1]
   }
 
-  console.log("Tensor Input Data:", inputData);
-
   // Return tensor
   return tf.tensor4d(inputData, [1, 28, 28, 1]);
 }
 
 async function predict() {
+  document.getElementById("loader").style.display = "block";
   const model = await tf.loadLayersModel(modelUrl + "model.json");
   const inputTensor = processImage();
   const prediction = model.predict(inputTensor);
@@ -116,18 +123,30 @@ async function predict() {
 
   inputTensor.print();
 
+  console.log("predictionArray", predictionArray);
+
   const topPredictions = predictionArray[0]
     .map((prob, index) => ({ label: classLabels[index], probability: prob }))
     .sort((a, b) => b.probability - a.probability)
     .slice(0, 5);
-  let resultText = "Top prediction:\n";
-  let confText = "";
-  console.log("topPredictions", topPredictions);
-  resultText = `Prediction: ${topPredictions[0].label}`;
-  confText = `Confidence: ${topPredictions[0].probability * 100}`;
 
-  resultP.textContent = resultText;
-  confP.textContent = confText;
+  let resultText = `Label: ${topPredictions[0].label}`;
+  let confText = `Confidence: ${(topPredictions[0].probability * 100).toFixed(
+    2
+  )}%`;
+
+  setTimeout(function () {
+    document.getElementById("loader").style.display = "none";
+    document.getElementById("result").style.display = "block";
+    document.getElementById("conf").style.display = "block";
+
+    resultP.textContent = resultText;
+    confP.textContent = confText;
+  }, 1000);
+
+  // topPredictions.forEach((pred) => {
+  //   resultText += `${pred.label}: ${(pred.probability * 100).toFixed(2)}%\n`;
+  // });
 }
 
 runModel();
